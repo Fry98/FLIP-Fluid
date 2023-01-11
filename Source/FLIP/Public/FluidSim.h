@@ -37,6 +37,9 @@ public:
 	float Gravity = 8.f;
 
 	UPROPERTY(EditAnywhere)
+	int JacobiIters = 30;
+
+	UPROPERTY(EditAnywhere)
 	float FlipRatio = 0.f;
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

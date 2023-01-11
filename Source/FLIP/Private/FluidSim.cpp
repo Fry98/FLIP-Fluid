@@ -215,4 +215,39 @@ void AFluidSim::Tick(float DeltaTime)
 			}
 		}
 	}
+
+	// Jacobi
+	PressureGridFront.Clear();
+	PressureGridBack.Clear();
+	bool GridSwitch = false;
+
+	for (int i = 0; i < JacobiIters; i++)
+	{
+		auto& GridFront = GridSwitch ? PressureGridBack : PressureGridFront;
+		auto& GridBack = GridSwitch ? PressureGridFront : PressureGridBack;
+		GridSwitch = !GridSwitch;
+			
+		for (int z = 0; z < GridSize.Z; z++)
+		{
+			for (int y = 0; y < GridSize.Y; y++)
+			{
+				for (int x = 0; x < GridSize.X; x++)
+				{
+					const FIntVector Pos(x, y, z);
+					if (WeightScalarSumGrid.Get(Pos) < 0.0001f) continue;
+
+					const float Divergence = DivergenceGrid.Get(Pos);
+					const float Left = GridBack.Get(Pos + FIntVector(-1, 0, 0));
+					const float Right = GridBack.Get(Pos + FIntVector(1, 0, 0));
+					const float Bottom = GridBack.Get(Pos + FIntVector(0, -1, 0));
+					const float Top = GridBack.Get(Pos + FIntVector(0, 1, 0));
+					const float Back = GridBack.Get(Pos + FIntVector(0, 0, -1));
+					const float Front = GridBack.Get(Pos + FIntVector(0, 0, 1));
+
+					const float Pressure = (Left + Right + Bottom + Top + Back + Front - Divergence) / 6.f;
+					GridFront.Set(Pos, Pressure);
+				}
+			}
+		}
+	}
 }
