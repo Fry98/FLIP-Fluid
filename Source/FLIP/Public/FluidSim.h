@@ -31,7 +31,7 @@ public:
 	float CellSize = 10.f;
 
 	UPROPERTY(EditAnywhere)
-	int Density = 5;
+	int MaxDensity = 5;
 
 	UPROPERTY(EditAnywhere)
 	float Gravity = 8.f;

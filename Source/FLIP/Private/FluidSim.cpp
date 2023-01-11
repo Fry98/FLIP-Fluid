@@ -53,7 +53,7 @@ void AFluidSim::BeginPlay()
 		{
 			for (int x = SpawnPosition.X; x < SpawnPosition.X + SpawnSize.X; x++)
 			{
-				for (int i = 0; i < Density; i++)
+				for (int i = 0; i < MaxDensity; i++)
 				{
 					FVector Wiggle = FVector(
 						FMath::RandRange(0.f, 0.9999f),
@@ -70,55 +70,33 @@ void AFluidSim::BeginPlay()
 			}
 		}
 	}
-
-	VelXSumGrid.Resize(FIntVector(2));
 	
-	VelXSumGrid.AddInterpolated(FVector(.5f, .5f, .5f), 14);
+	VelXSumGrid.Resize(GridSize + FIntVector(1));
+	VelYSumGrid.Resize(GridSize + FIntVector(1));
+	VelZSumGrid.Resize(GridSize + FIntVector(1));
 	
-	UE_LOG(LogTemp, Display, TEXT("%f %f"),
-		VelXSumGrid.Get(FIntVector(0, 0, 0)),
-		VelXSumGrid.Get(FIntVector(1, 0, 0))
-	);
-	UE_LOG(LogTemp, Display, TEXT("%f %f"),
-		VelXSumGrid.Get(FIntVector(0, 0, 1)),
-		VelXSumGrid.Get(FIntVector(1, 0, 1))
-	);
-	UE_LOG(LogTemp, Display, TEXT("----"));
-	UE_LOG(LogTemp, Display, TEXT("%f %f"),
-		VelXSumGrid.Get(FIntVector(0, 1, 0)),
-		VelXSumGrid.Get(FIntVector(1, 1, 0))
-	);
-	UE_LOG(LogTemp, Display, TEXT("%f %f"),
-		VelXSumGrid.Get(FIntVector(0, 1, 1)),
-		VelXSumGrid.Get(FIntVector(1, 1, 1))
-	);
+	WeightXSumGrid.Resize(GridSize + FIntVector(1));
+	WeightYSumGrid.Resize(GridSize + FIntVector(1));
+	WeightZSumGrid.Resize(GridSize + FIntVector(1));
+	WeightScalarSumGrid.Resize(GridSize + FIntVector(1));
 	
-	// VelXSumGrid.Resize(GridSize + FIntVector(1));
-	// VelYSumGrid.Resize(GridSize + FIntVector(1));
-	// VelZSumGrid.Resize(GridSize + FIntVector(1));
-	//
-	// WeightXSumGrid.Resize(GridSize + FIntVector(1));
-	// WeightYSumGrid.Resize(GridSize + FIntVector(1));
-	// WeightZSumGrid.Resize(GridSize + FIntVector(1));
-	// WeightScalarSumGrid.Resize(GridSize + FIntVector(1));
-	//
-	// DivergenceGrid.Resize(GridSize);
-	// PressureGridFront.Resize(GridSize);
-	// PressureGridBack.Resize(GridSize);
-	//
-	// VelocityXGridBack.Resize(GridSize + FIntVector(1));
-	// VelocityYGridBack.Resize(GridSize + FIntVector(1));
-	// VelocityZGridBack.Resize(GridSize + FIntVector(1));
-	// VelocityXGridFront.Resize(GridSize + FIntVector(1));
-	// VelocityYGridFront.Resize(GridSize + FIntVector(1));
-	// VelocityZGridFront.Resize(GridSize + FIntVector(1));
+	DivergenceGrid.Resize(GridSize);
+	PressureGridFront.Resize(GridSize);
+	PressureGridBack.Resize(GridSize);
+	
+	VelocityXGridBack.Resize(GridSize + FIntVector(1));
+	VelocityYGridBack.Resize(GridSize + FIntVector(1));
+	VelocityZGridBack.Resize(GridSize + FIntVector(1));
+	VelocityXGridFront.Resize(GridSize + FIntVector(1));
+	VelocityYGridFront.Resize(GridSize + FIntVector(1));
+	VelocityZGridFront.Resize(GridSize + FIntVector(1));
 }
 
 void AFluidSim::EnforceBounds()
 {
 	for (int x = 0; x <= GridSize.X; x++)
 	{
-		for (int y = 0; y <= GridSize.X; y++)
+		for (int y = 0; y <= GridSize.Y; y++)
 		{
 			VelocityZGridFront.Set(FIntVector(x, y, 0), 0);
 			VelocityZGridFront.Set(FIntVector(x, y, GridSize.Z), 0);
@@ -147,73 +125,94 @@ void AFluidSim::EnforceBounds()
 void AFluidSim::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//
-	// // Transfer velocity to grid
-	// VelXSumGrid.Clear();
-	// VelYSumGrid.Clear();
-	// VelZSumGrid.Clear();
-	// WeightScalarSumGrid.Clear();
-	// WeightXSumGrid.Clear();
-	// WeightYSumGrid.Clear();
-	// WeightZSumGrid.Clear();
-	//
-	// for (const auto Particle : Particles)
-	// {
-	// 	const FVector GridPos = Particle->GetParticlePosition() / CellSize;
-	// 	const FVector PartVel = Particle->GetParticleVelocity();
-	//
-	// 	VelXSumGrid.AddInterpolated(GridPos + FVector(.5f, 0.f, 0.f), PartVel.X);
-	// 	VelYSumGrid.AddInterpolated(GridPos + FVector(0.f, .5f, 0.f), PartVel.Y);
-	// 	VelZSumGrid.AddInterpolated(GridPos + FVector(0.f, 0.f, .5f), PartVel.Z);
-	//
-	// 	WeightXSumGrid.AddInterpolated(GridPos + FVector(.5f, 0.f, 0.f), 1.0);
-	// 	WeightYSumGrid.AddInterpolated(GridPos + FVector(0.f, .5f, 0.f), 1.0);
-	// 	WeightZSumGrid.AddInterpolated(GridPos + FVector(0.f, 0.f, .5f), 1.0);
-	// 	WeightScalarSumGrid.AddInterpolated(GridPos, 1.0);
-	// }
-	//
-	// for (int z = 0; z <= GridSize.Z; z++)
-	// {
-	// 	for (int y = 0; y <= GridSize.Y; y++)
-	// 	{
-	// 		for (int x = 0; x <= GridSize.X; x++)
-	// 		{
-	// 			const FIntVector Pos = FIntVector(x, y, z);
-	// 			
-	// 			auto Weight = WeightXSumGrid.Get(Pos);
-	// 			const auto NewVelX = Weight > 0.f ? VelXSumGrid.Get(Pos) / Weight : 0.f;
-	//
-	// 			Weight = WeightYSumGrid.Get(Pos);
-	// 			const auto NewVelY = Weight > 0.f ? VelYSumGrid.Get(Pos) / Weight : 0.f;
-	//
-	// 			Weight = WeightZSumGrid.Get(Pos);
-	// 			const auto NewVelZ = Weight > 0.f ? VelZSumGrid.Get(Pos) / Weight : 0.f;
-	//
-	// 			VelocityXGridFront.Set(Pos, NewVelX);
-	// 			VelocityXGridBack.Set(Pos, NewVelX);
-	// 			VelocityYGridFront.Set(Pos, NewVelY);
-	// 			VelocityYGridBack.Set(Pos, NewVelY);
-	// 			VelocityZGridFront.Set(Pos, NewVelZ);
-	// 			VelocityZGridBack.Set(Pos, NewVelZ);
-	// 		}
-	// 	}
-	// }
-	//
-	// // Add forces
-	// for (int z = 0; z <= GridSize.Z; z++)
-	// {
-	// 	for (int y = 0; y <= GridSize.Y; y++)
-	// 	{
-	// 		for (int x = 0; x <= GridSize.X; x++)
-	// 		{
-	// 			const auto Pos = FIntVector(x, y, z);
-	// 			VelocityZGridFront.Add(Pos, Gravity);
-	// 		}
-	// 	}
-	// }
-	//
-	// EnforceBounds();
-	//
-	// // Divergence
-	// // TODO
+	
+	// Transfer velocity to grid
+	VelXSumGrid.Clear();
+	VelYSumGrid.Clear();
+	VelZSumGrid.Clear();
+	WeightScalarSumGrid.Clear();
+	WeightXSumGrid.Clear();
+	WeightYSumGrid.Clear();
+	WeightZSumGrid.Clear();
+	
+	for (const auto Particle : Particles)
+	{
+		const FVector GridPos = Particle->GetParticlePosition() / CellSize;
+		const FVector PartVel = Particle->GetParticleVelocity();
+	
+		VelXSumGrid.AddInterpolated(GridPos + FVector(.5f, 0.f, 0.f), PartVel.X);
+		VelYSumGrid.AddInterpolated(GridPos + FVector(0.f, .5f, 0.f), PartVel.Y);
+		VelZSumGrid.AddInterpolated(GridPos + FVector(0.f, 0.f, .5f), PartVel.Z);
+	
+		WeightXSumGrid.AddInterpolated(GridPos + FVector(.5f, 0.f, 0.f), 1.0);
+		WeightYSumGrid.AddInterpolated(GridPos + FVector(0.f, .5f, 0.f), 1.0);
+		WeightZSumGrid.AddInterpolated(GridPos + FVector(0.f, 0.f, .5f), 1.0);
+		WeightScalarSumGrid.AddInterpolated(GridPos, 1.0);
+	}
+	
+	for (int z = 0; z <= GridSize.Z; z++)
+	{
+		for (int y = 0; y <= GridSize.Y; y++)
+		{
+			for (int x = 0; x <= GridSize.X; x++)
+			{
+				const FIntVector Pos = FIntVector(x, y, z);
+				
+				auto Weight = WeightXSumGrid.Get(Pos);
+				const auto NewVelX = Weight > 0.f ? VelXSumGrid.Get(Pos) / Weight : 0.f;
+	
+				Weight = WeightYSumGrid.Get(Pos);
+				const auto NewVelY = Weight > 0.f ? VelYSumGrid.Get(Pos) / Weight : 0.f;
+	
+				Weight = WeightZSumGrid.Get(Pos);
+				const auto NewVelZ = Weight > 0.f ? VelZSumGrid.Get(Pos) / Weight : 0.f;
+	
+				VelocityXGridFront.Set(Pos, NewVelX);
+				VelocityXGridBack.Set(Pos, NewVelX);
+				VelocityYGridFront.Set(Pos, NewVelY);
+				VelocityYGridBack.Set(Pos, NewVelY);
+				VelocityZGridFront.Set(Pos, NewVelZ);
+				VelocityZGridBack.Set(Pos, NewVelZ);
+			}
+		}
+	}
+	
+	// Add forces
+	for (int z = 0; z <= GridSize.Z; z++)
+	{
+		for (int y = 0; y <= GridSize.Y; y++)
+		{
+			for (int x = 0; x <= GridSize.X; x++)
+			{
+				const auto Pos = FIntVector(x, y, z);
+				VelocityZGridFront.Add(Pos, Gravity);
+			}
+		}
+	}
+	
+	EnforceBounds();
+	
+	// Divergence
+	for (int z = 0; z < GridSize.Z; z++)
+	{
+		for (int y = 0; y < GridSize.Y; y++)
+		{
+			for (int x = 0; x < GridSize.X; x++)
+			{
+				const FIntVector Pos(x, y, z);
+				const float Density = WeightScalarSumGrid.Get(Pos);
+				if (Density < 0.0001f) continue;
+
+				const float LeftX = VelocityXGridFront.Get(Pos);
+				const float RightX = VelocityXGridFront.Get(Pos + FIntVector(1, 0, 0));
+				const float BottomY = VelocityYGridFront.Get(Pos);
+				const float TopY = VelocityYGridFront.Get(Pos + FIntVector(0, 1, 0));
+				const float BackZ = VelocityZGridFront.Get(Pos);
+				const float FrontZ = VelocityZGridFront.Get(Pos + FIntVector(0, 0, 1));
+
+				const float Divergence = (RightX - LeftX) + (TopY - BottomY) + (FrontZ - BackZ);
+				DivergenceGrid.Set(Pos, Divergence - FMath::Max(Density - MaxDensity, 0.f));
+			}
+		}
+	}
 }
