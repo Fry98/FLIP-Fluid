@@ -31,6 +31,9 @@ public:
 
 	UFUNCTION()
 	FVector GetParticleVelocity() const;
+	
+	UPROPERTY(EditAnywhere)
+    class UMaterial* WaterMaterial;
 
 protected:
 	// Called when the game starts or when spawned
