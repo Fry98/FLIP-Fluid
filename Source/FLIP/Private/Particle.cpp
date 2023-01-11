@@ -43,6 +43,16 @@ FVector AParticle::GetParticlePosition() const
 	return Position;
 }
 
+void AParticle::SetParticleVelocity(const FVector Vel)
+{
+	Velocity = Vel;
+}
+
+FVector AParticle::GetParticleVelocity() const
+{
+	return Velocity;
+}
+
 // Called every frame
 void AParticle::Tick(float DeltaTime)
 {

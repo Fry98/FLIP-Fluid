@@ -26,6 +26,12 @@ public:
 	UFUNCTION()
 	FVector GetParticlePosition() const;
 
+	UFUNCTION()
+	void SetParticleVelocity(const FVector Vel);
+
+	UFUNCTION()
+	FVector GetParticleVelocity() const;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -38,6 +44,9 @@ protected:
 
 	UPROPERTY()
 	FVector Position;
+
+	UPROPERTY()
+	FVector Velocity = FVector(0.0);
 
 public:	
 	// Called every frame

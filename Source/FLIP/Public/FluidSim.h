@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Grid3D.h"
 #include "Particle.h"
 #include "GameFramework/Actor.h"
+#include "Spatial/DenseGrid3.h"
 #include "FluidSim.generated.h"
 
 UCLASS()
@@ -17,19 +19,22 @@ public:
 	AFluidSim();
 
 	UPROPERTY(EditAnywhere)
-	FIntVector GridSize = FIntVector(50, 30, 20);
+	FIntVector GridSize = FIntVector(40, 17, 30);
 
 	UPROPERTY(EditAnywhere)
 	FIntVector SpawnPosition = FIntVector(0, 0, 0);
 
 	UPROPERTY(EditAnywhere)
-	FIntVector SpawnSize = FIntVector(1, 1, 1);
+	FIntVector SpawnSize = FIntVector(12, 17, 10);
 
 	UPROPERTY(EditAnywhere)
 	float CellSize = 10.f;
 
 	UPROPERTY(EditAnywhere)
 	int Density = 5;
+
+	UPROPERTY(EditAnywhere)
+	float Gravity = 8.f;
 
 	UPROPERTY(EditAnywhere)
 	float FlipRatio = 0.f;
@@ -48,7 +53,26 @@ protected:
 
 	UPROPERTY()
 	TArray<AParticle*> Particles;
+	
+	FGrid3D VelXSumGrid;
+	FGrid3D VelYSumGrid;
+	FGrid3D VelZSumGrid;
+	
+	FGrid3D WeightXSumGrid;
+	FGrid3D WeightYSumGrid;
+	FGrid3D WeightZSumGrid;
+	FGrid3D WeightScalarSumGrid;
 
+	FGrid3D DivergenceGrid;
+	FGrid3D PressureGridFront;
+	FGrid3D PressureGridBack;
+
+	FGrid3D VelocityXGridBack;
+	FGrid3D VelocityYGridBack;
+	FGrid3D VelocityZGridBack;
+	FGrid3D VelocityXGridFront;
+	FGrid3D VelocityYGridFront;
+	FGrid3D VelocityZGridFront;
 private:
 	void ResizeBoxes() const;
 

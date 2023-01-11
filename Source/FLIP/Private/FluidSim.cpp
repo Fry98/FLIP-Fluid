@@ -70,11 +70,94 @@ void AFluidSim::BeginPlay()
 			}
 		}
 	}
+
+	VelXSumGrid.Resize(GridSize + FIntVector(1));
+	VelYSumGrid.Resize(GridSize + FIntVector(1));
+	VelZSumGrid.Resize(GridSize + FIntVector(1));
+	
+	WeightXSumGrid.Resize(GridSize + FIntVector(1));
+	WeightYSumGrid.Resize(GridSize + FIntVector(1));
+	WeightZSumGrid.Resize(GridSize + FIntVector(1));
+	WeightScalarSumGrid.Resize(GridSize + FIntVector(1));
+
+	DivergenceGrid.Resize(GridSize);
+	PressureGridFront.Resize(GridSize);
+	PressureGridBack.Resize(GridSize);
+
+	VelocityXGridBack.Resize(GridSize + FIntVector(1));
+	VelocityYGridBack.Resize(GridSize + FIntVector(1));
+	VelocityZGridBack.Resize(GridSize + FIntVector(1));
+	VelocityXGridFront.Resize(GridSize + FIntVector(1));
+	VelocityYGridFront.Resize(GridSize + FIntVector(1));
+	VelocityZGridFront.Resize(GridSize + FIntVector(1));
 }
 
 // Called every frame
 void AFluidSim::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
+	// Transfer velocity to grid
+	VelXSumGrid.Clear();
+	VelYSumGrid.Clear();
+	VelZSumGrid.Clear();
+	WeightScalarSumGrid.Clear();
+	WeightXSumGrid.Clear();
+	WeightYSumGrid.Clear();
+	WeightZSumGrid.Clear();
+
+	for (const auto Particle : Particles)
+	{
+		const FVector GridPos = Particle->GetParticlePosition() / CellSize;
+		const FVector PartVel = Particle->GetParticleVelocity();
+
+		VelXSumGrid.AddInterpolated(GridPos + FVector(.5f, 0.f, 0.f), PartVel.X);
+		VelYSumGrid.AddInterpolated(GridPos + FVector(0.f, .5f, 0.f), PartVel.Y);
+		VelZSumGrid.AddInterpolated(GridPos + FVector(0.f, 0.f, .5f), PartVel.Z);
+
+		WeightXSumGrid.AddInterpolated(GridPos + FVector(.5f, 0.f, 0.f), 1.0);
+		WeightYSumGrid.AddInterpolated(GridPos + FVector(0.f, .5f, 0.f), 1.0);
+		WeightZSumGrid.AddInterpolated(GridPos + FVector(0.f, 0.f, .5f), 1.0);
+		WeightScalarSumGrid.AddInterpolated(GridPos, 1.0);
+	}
+
+	for (int z = 0; z <= GridSize.Z; z++)
+	{
+		for (int y = 0; y <= GridSize.Y; y++)
+		{
+			for (int x = 0; x <= GridSize.X; x++)
+			{
+				const FIntVector Pos = FIntVector(x, y, z);
+				
+				auto Weight = WeightXSumGrid.Get(Pos);
+				const auto NewVelX = Weight > 0.f ? VelXSumGrid.Get(Pos) / Weight : 0.f;
+
+				Weight = WeightYSumGrid.Get(Pos);
+				const auto NewVelY = Weight > 0.f ? VelYSumGrid.Get(Pos) / Weight : 0.f;
+
+				Weight = WeightZSumGrid.Get(Pos);
+				const auto NewVelZ = Weight > 0.f ? VelZSumGrid.Get(Pos) / Weight : 0.f;
+
+				VelocityXGridFront.Set(Pos, NewVelX);
+				VelocityXGridBack.Set(Pos, NewVelX);
+				VelocityYGridFront.Set(Pos, NewVelY);
+				VelocityYGridBack.Set(Pos, NewVelY);
+				VelocityZGridFront.Set(Pos, NewVelZ);
+				VelocityZGridBack.Set(Pos, NewVelZ);
+			}
+		}
+	}
+
+	// Add forces
+	for (int z = 0; z <= GridSize.Z; z++)
+	{
+		for (int y = 0; y <= GridSize.Y; y++)
+		{
+			for (int x = 0; x <= GridSize.X; x++)
+			{
+				const auto Pos = FIntVector(x, y, z);
+				VelocityZGridFront.Set(Pos, VelocityZGridFront.Get(Pos) + Gravity);
+			}
+		}
+	}
 }
