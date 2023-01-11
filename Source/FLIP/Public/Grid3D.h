@@ -20,6 +20,7 @@ public:
 	void Resize(const FIntVector NewSize);
 
 	void Set(const FIntVector Coords, const float Value);
+	void Add(const FIntVector Coords, const float Value);
 	float Get(const FIntVector Coords) const;
 
 	void AddInterpolated(const FVector Coords, const float Value);

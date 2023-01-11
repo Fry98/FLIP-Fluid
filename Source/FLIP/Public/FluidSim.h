@@ -75,6 +75,7 @@ protected:
 	FGrid3D VelocityZGridFront;
 private:
 	void ResizeBoxes() const;
+	void EnforceBounds();
 
 public:	
 	// Called every frame
