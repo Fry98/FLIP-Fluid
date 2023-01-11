@@ -53,7 +53,7 @@ void AFluidSim::BeginPlay()
 		{
 			for (int x = SpawnPosition.X; x < SpawnPosition.X + SpawnSize.X; x++)
 			{
-				for (int i = 0; i < MaxDensity; i++)
+				for (int i = 0; i < MaxDensity * 1.3; i++)
 				{
 					FVector Wiggle = FVector(
 						FMath::RandRange(0.f, 0.9999f),
@@ -279,4 +279,38 @@ void AFluidSim::Tick(float DeltaTime)
 	}
 
 	EnforceBounds();
+
+	// Transfer velocity to particles
+	for (auto Particle : Particles)
+	{
+		const FVector GridPos = Particle->GetParticlePosition() / CellSize;
+		const FVector PartVel = Particle->GetParticleVelocity();
+
+		const float CurrVelX = VelocityXGridFront.GetInterpolated(GridPos + FVector(.5f, 0.f, 0.f));
+		const float CurrVelY = VelocityYGridFront.GetInterpolated(GridPos + FVector(0.f, .5f, 0.f));
+		const float CurrVelZ = VelocityZGridFront.GetInterpolated(GridPos + FVector(0.f, 0.f, .5f));
+
+		Particle->SetParticleVelocity(FVector(CurrVelX, CurrVelY, CurrVelZ));
+	}
+
+	// Advect particles	
+	for (auto Particle : Particles)
+	{
+		const FVector PartPos = Particle->GetParticlePosition();
+		const FVector GridPos = PartPos / CellSize;
+	
+		const float OriginVelX = VelocityXGridFront.GetInterpolated(GridPos + FVector(.5f, 0.f, 0.f));
+		const float OriginVelY = VelocityYGridFront.GetInterpolated(GridPos + FVector(0.f, .5f, 0.f));
+		const float OriginVelZ = VelocityZGridFront.GetInterpolated(GridPos + FVector(0.f, 0.f, .5f));
+
+		const FVector NewPos = PartPos + FVector(OriginVelX, OriginVelY, OriginVelZ);
+		if (
+			NewPos.X >= 0 && NewPos.X < GridSize.X * CellSize &&
+			NewPos.Y >= 0 && NewPos.Y < GridSize.Y * CellSize &&
+			NewPos.Z >= 0 && NewPos.Z < GridSize.Z * CellSize
+		)
+		{
+			Particle->SetParticlePosition(NewPos);
+		}
+	}
 }
