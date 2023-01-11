@@ -13,10 +13,6 @@ AParticle::AParticle()
 	Sphere = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere"));
 	Sphere->SetStaticMesh(ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'")).Object);
 	Sphere->SetRelativeScale3D(FVector(.1f));
-	Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Sphere->SetSimulatePhysics(false);
-	Sphere->SetEnableGravity(false);
-	Sphere->SetCastShadow(false);
 	RootComponent = Sphere;
 }
 
