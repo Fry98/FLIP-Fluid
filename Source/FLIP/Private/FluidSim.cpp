@@ -250,4 +250,33 @@ void AFluidSim::Tick(float DeltaTime)
 			}
 		}
 	}
+
+	// Subtract gradient from velocity
+	auto& LastPressure = GridSwitch ? PressureGridFront : PressureGridBack;
+	for (int z = 0; z <= GridSize.Z; z++)
+	{
+		for (int y = 0; y <= GridSize.Y; y++)
+		{
+			for (int x = 0; x <= GridSize.X; x++)
+			{
+				const FIntVector Pos(x, y, z);
+				const float Left = LastPressure.Get(Pos + FIntVector(-1, 0, 0));
+				const float Right = LastPressure.Get(Pos);
+				const float Bottom = LastPressure.Get(Pos + FIntVector(0, -1, 0));
+				const float Top = Right;
+				const float Back = LastPressure.Get(Pos + FIntVector(0, 0, -1));
+				const float Front = Right;
+
+				const float GradX = Right - Left;
+				const float GradY = Top - Bottom;
+				const float GradZ = Front - Back;
+
+				VelocityXGridFront.Add(Pos, -GradX);
+				VelocityYGridFront.Add(Pos, -GradY);
+				VelocityZGridFront.Add(Pos, -GradZ);
+			}
+		}
+	}
+
+	EnforceBounds();
 }

@@ -8,11 +8,8 @@
 // Sets default values
 AParticle::AParticle()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	Sphere = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere"));
-	//FString waterMatName = "/Game/Materials/Water.Water";
-	//WaterMaterial = CreateDefaultSubobject<UMaterial>(waterMatName);
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> FoundMaterial(TEXT("/Game/Materials/Water.Water"));
 	if (FoundMaterial.Succeeded())
