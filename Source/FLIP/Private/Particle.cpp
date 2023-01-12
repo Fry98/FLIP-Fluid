@@ -65,6 +65,11 @@ FVector AParticle::GetParticleVelocity() const
 	return Velocity;
 }
 
+void AParticle::Hide() const
+{
+	Sphere->SetVisibility(false);
+}
+
 // Called every frame
 void AParticle::Tick(float DeltaTime)
 {

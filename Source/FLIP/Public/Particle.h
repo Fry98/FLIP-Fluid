@@ -31,6 +31,9 @@ public:
 
 	UFUNCTION()
 	FVector GetParticleVelocity() const;
+
+	UFUNCTION()
+	void Hide() const;
 	
 	UPROPERTY(EditAnywhere)
     class UMaterial* WaterMaterial;

@@ -293,7 +293,7 @@ void AFluidSim::Tick(float DeltaTime)
 		Particle->SetParticleVelocity(FVector(CurrVelX, CurrVelY, CurrVelZ));
 	}
 
-	// Advect particles	
+	// Advect particles
 	for (auto Particle : Particles)
 	{
 		const FVector PartPos = Particle->GetParticlePosition();
@@ -303,7 +303,12 @@ void AFluidSim::Tick(float DeltaTime)
 		const float OriginVelY = VelocityYGridFront.GetInterpolated(GridPos + FVector(0.f, .5f, 0.f));
 		const float OriginVelZ = VelocityZGridFront.GetInterpolated(GridPos + FVector(0.f, 0.f, .5f));
 
-		const FVector NewPos = PartPos + FVector(OriginVelX, OriginVelY, OriginVelZ);
+		const FVector HalfPos = (PartPos + FVector(OriginVelX, OriginVelY, OriginVelZ) * .5f) / CellSize;
+		const float HalfVelX = VelocityXGridFront.GetInterpolated(HalfPos + FVector(.5f, 0.f, 0.f));
+		const float HalfVelY = VelocityYGridFront.GetInterpolated(HalfPos + FVector(0.f, .5f, 0.f));
+		const float HalfVelZ = VelocityZGridFront.GetInterpolated(HalfPos + FVector(0.f, 0.f, .5f));
+
+		const FVector NewPos = PartPos + FVector(HalfVelX, HalfVelY, HalfVelZ);
 		if (
 			NewPos.X >= 0 && NewPos.X < GridSize.X * CellSize &&
 			NewPos.Y >= 0 && NewPos.Y < GridSize.Y * CellSize &&
@@ -311,6 +316,9 @@ void AFluidSim::Tick(float DeltaTime)
 		)
 		{
 			Particle->SetParticlePosition(NewPos);
+		} else
+		{
+			Particle->Hide();
 		}
 	}
 }
