@@ -28,6 +28,9 @@ public:
 	FIntVector SpawnSize = FIntVector(15, 15, 17);
 
 	UPROPERTY(EditAnywhere)
+	bool Pour = false;
+
+	UPROPERTY(EditAnywhere)
 	float CellSize = 10.f;
 
 	UPROPERTY(EditAnywhere)
@@ -79,6 +82,7 @@ protected:
 private:
 	void ResizeBoxes() const;
 	void EnforceBounds();
+	void SpawnInVolume();
 
 public:	
 	// Called every frame

@@ -46,7 +46,31 @@ void AFluidSim::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEve
 void AFluidSim::BeginPlay()
 {
 	Super::BeginPlay();
+	if (!Pour) SpawnInVolume();
+	
+	VelXSumGrid.Resize(GridSize + FIntVector(1));
+	VelYSumGrid.Resize(GridSize + FIntVector(1));
+	VelZSumGrid.Resize(GridSize + FIntVector(1));
+	
+	WeightXSumGrid.Resize(GridSize + FIntVector(1));
+	WeightYSumGrid.Resize(GridSize + FIntVector(1));
+	WeightZSumGrid.Resize(GridSize + FIntVector(1));
+	WeightScalarSumGrid.Resize(GridSize + FIntVector(1));
+	
+	DivergenceGrid.Resize(GridSize);
+	PressureGridFront.Resize(GridSize);
+	PressureGridBack.Resize(GridSize);
+	
+	VelocityXGridBack.Resize(GridSize + FIntVector(1));
+	VelocityYGridBack.Resize(GridSize + FIntVector(1));
+	VelocityZGridBack.Resize(GridSize + FIntVector(1));
+	VelocityXGridFront.Resize(GridSize + FIntVector(1));
+	VelocityYGridFront.Resize(GridSize + FIntVector(1));
+	VelocityZGridFront.Resize(GridSize + FIntVector(1));
+}
 
+void AFluidSim::SpawnInVolume()
+{
 	for (int z = SpawnPosition.Z; z < SpawnPosition.Z + SpawnSize.Z; z++)
 	{
 		for (int y = SpawnPosition.Y; y < SpawnPosition.Y + SpawnSize.Y; y++)
@@ -70,26 +94,6 @@ void AFluidSim::BeginPlay()
 			}
 		}
 	}
-	
-	VelXSumGrid.Resize(GridSize + FIntVector(1));
-	VelYSumGrid.Resize(GridSize + FIntVector(1));
-	VelZSumGrid.Resize(GridSize + FIntVector(1));
-	
-	WeightXSumGrid.Resize(GridSize + FIntVector(1));
-	WeightYSumGrid.Resize(GridSize + FIntVector(1));
-	WeightZSumGrid.Resize(GridSize + FIntVector(1));
-	WeightScalarSumGrid.Resize(GridSize + FIntVector(1));
-	
-	DivergenceGrid.Resize(GridSize);
-	PressureGridFront.Resize(GridSize);
-	PressureGridBack.Resize(GridSize);
-	
-	VelocityXGridBack.Resize(GridSize + FIntVector(1));
-	VelocityYGridBack.Resize(GridSize + FIntVector(1));
-	VelocityZGridBack.Resize(GridSize + FIntVector(1));
-	VelocityXGridFront.Resize(GridSize + FIntVector(1));
-	VelocityYGridFront.Resize(GridSize + FIntVector(1));
-	VelocityZGridFront.Resize(GridSize + FIntVector(1));
 }
 
 void AFluidSim::EnforceBounds()
@@ -125,6 +129,7 @@ void AFluidSim::EnforceBounds()
 void AFluidSim::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (Pour) SpawnInVolume();
 	
 	// Transfer velocity to grid
 	VelXSumGrid.Clear();
