@@ -286,11 +286,19 @@ void AFluidSim::Tick(float DeltaTime)
 		const FVector GridPos = Particle->GetParticlePosition() / CellSize;
 		const FVector PartVel = Particle->GetParticleVelocity();
 
+		const float OgVelX = VelocityXGridBack.GetInterpolated(GridPos + FVector(.5f, 0.f, 0.f));
+		const float OgVelY = VelocityYGridBack.GetInterpolated(GridPos + FVector(0.f, .5f, 0.f));
+		const float OgVelZ = VelocityZGridBack.GetInterpolated(GridPos + FVector(0.f, 0.f, .5f));
 		const float CurrVelX = VelocityXGridFront.GetInterpolated(GridPos + FVector(.5f, 0.f, 0.f));
 		const float CurrVelY = VelocityYGridFront.GetInterpolated(GridPos + FVector(0.f, .5f, 0.f));
 		const float CurrVelZ = VelocityZGridFront.GetInterpolated(GridPos + FVector(0.f, 0.f, .5f));
 
-		Particle->SetParticleVelocity(FVector(CurrVelX, CurrVelY, CurrVelZ));
+		const FVector OgVel(OgVelX, OgVelY, OgVelZ);
+		const FVector CurrVel(CurrVelX, CurrVelY, CurrVelZ);
+		const FVector FlipVel = PartVel + (CurrVel - OgVel);
+
+		const FVector FinalVel = FlipVel * FlipRatio + CurrVel * (1 - FlipRatio);
+		Particle->SetParticleVelocity(FinalVel);
 	}
 
 	// Advect particles

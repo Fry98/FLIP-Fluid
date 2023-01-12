@@ -22,25 +22,25 @@ public:
 	FIntVector GridSize = FIntVector(40, 17, 30);
 
 	UPROPERTY(EditAnywhere)
-	FIntVector SpawnPosition = FIntVector(0, 0, 0);
+	FIntVector SpawnPosition = FIntVector(1, 1, 1);
 
 	UPROPERTY(EditAnywhere)
-	FIntVector SpawnSize = FIntVector(12, 17, 10);
+	FIntVector SpawnSize = FIntVector(15, 15, 17);
 
 	UPROPERTY(EditAnywhere)
 	float CellSize = 10.f;
 
 	UPROPERTY(EditAnywhere)
-	int MaxDensity = 5;
+	int MaxDensity = 6;
 
 	UPROPERTY(EditAnywhere)
 	float Gravity = 8.f;
 
 	UPROPERTY(EditAnywhere)
-	int JacobiIters = 30;
+	int JacobiIters = 40;
 
 	UPROPERTY(EditAnywhere)
-	float FlipRatio = 0.f;
+	float FlipRatio = .85f;
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
